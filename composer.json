@@ -1,0 +1,10 @@
+{
+    "require": {
+        "clue/socket-raw": "^1.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "RrdCached\\": "src/"
+        }
+    }
+}
