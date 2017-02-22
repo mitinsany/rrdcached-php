@@ -1,0 +1,13 @@
+{
+    "name": "mitinsany/rrdcached-php",
+    "description": "PHP wrapper for RRDCache daemon",
+    "homepage": "https://github.com/MitinSany/rrdcached-php",
+    "require": {
+        "clue/socket-raw": "^1.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "RrdCached\\": "src/"
+        }
+    }
+}
