@@ -59,7 +59,7 @@ class RrdCachedClient
      * @param $line
      * @return int
      */
-    protected function parseLn($line)
+    public function parseLn($line)
     {
         $parts = explode(' ', $line);
         return (int)$parts[0];
