@@ -13,16 +13,16 @@ class RrdCachedClient
     /** @var bool */
     protected $batchMode = false;
 
-    /** @var array */
+    /** @var */
     protected $batchCommands = [];
 
-    /** @var string */
+    /** @var */
     protected $socketPath;
 
     /** @var Socket */
     protected $socket;
 
-    /** @var array */
+    /** @var */
     public $defaultCreateParams = [];
 
     /** @var int */
@@ -30,7 +30,7 @@ class RrdCachedClient
 
     /**
      * RrdCachedClient constructor.
-     * @param string $socketPath
+     * @param $socketPath
      */
     function __construct($socketPath = 'unix:///var/run/rrdcached.sock')
     {
@@ -56,10 +56,10 @@ class RrdCachedClient
     }
 
     /**
-     * @param string $line
+     * @param $line
      * @return int
      */
-    protected function parseLn(string $line)
+    protected function parseLn($line)
     {
         $parts = explode(' ', $line);
         return (int)$parts[0];
@@ -84,7 +84,7 @@ class RrdCachedClient
      * @param $command
      * @return string
      */
-    function help(string $command)
+    function help($command)
     {
         $this->write('HELP ' . $command . PHP_EOL);
         return $this->readAndParse();
@@ -101,7 +101,7 @@ class RrdCachedClient
         $this->write('QUIT' . PHP_EOL);
     }
 
-    function update(string $fileName, array $options)
+    function update($fileName, $options)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -119,10 +119,10 @@ class RrdCachedClient
     }
 
     /**
-     * @param string $fileName
-     * @param array $options
+     * @param $fileName
+     * @param $options
      */
-    protected function updateErrorHandler(string $fileName, array $options)
+    protected function updateErrorHandler($fileName, $options)
     {
         $this->autoParse = false;
 
@@ -130,14 +130,14 @@ class RrdCachedClient
         $this->update($fileName, $options);
     }
 
-    function create(string $fileName, array $options)
+    function create($fileName, $options)
     {
         if (0 < count($options)) {
             $workOptions = $options;
         } elseif (0 < count($this->defaultCreateParams)) {
             $workOptions = $this->defaultCreateParams;
         } else {
-            throw new RrdCachedException('Missing options for create RRD file. Set array of options to parameter
+            throw new RrdCachedException('Missing options for create RRD file. Set of options to parameter
             defaultCreateParams or send as parameter in create function');
         }
 
@@ -223,10 +223,10 @@ class RrdCachedClient
     }
 
     /**
-     * @param string $fileName
+     * @param $fileName
      * @return string
      */
-    function flush(string $fileName)
+    function flush($fileName)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -243,10 +243,10 @@ class RrdCachedClient
     }
 
     /**
-     * @param string $fileName
+     * @param $fileName
      * @return string
      */
-    function wrote(string $fileName)
+    function wrote($fileName)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -272,20 +272,20 @@ class RrdCachedClient
     }
 
     /**
-     * @param string $fileName
+     * @param $fileName
      * @return string
      */
-    function pending(string $fileName)
+    function pending($fileName)
     {
         $this->write("PENDING $fileName\n");
         return $this->readAndParse();
     }
 
     /**
-     * @param string $fileName
+     * @param $fileName
      * @return string
      */
-    function forget(string $fileName)
+    function forget($fileName)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -311,53 +311,53 @@ class RrdCachedClient
     }
 
     /**
-     * @param string $fileName
-     * @param array $options
+     * @param $fileName
+     * @param $options
      * @return string
      */
-    function fetch(string $fileName, array $options)
+    function fetch($fileName, $options)
     {
         $this->write("FETCH $fileName " . implode(' ', $options) . "\n");
         return $this->readAndParse();
     }
 
     /**
-     * @param string $fileName
-     * @param array $options
+     * @param $fileName
+     * @param $options
      * @return string
      */
-    function fetchBin(string $fileName, array $options)
+    function fetchBin($fileName, $options)
     {
         $this->write("FETCHBIN $fileName " . implode(' ', $options) . "\n");
         return $this->readAndParse();
     }
 
     /**
-     * @param string $fileName
+     * @param $fileName
      * @return string
      */
-    function info(string $fileName)
+    function info($fileName)
     {
         $this->write("INFO $fileName\n");
         return $this->readAndParse();
     }
 
     /**
-     * @param string $fileName
+     * @param $fileName
      * @param int $raaIndex
      * @return string
      */
-    function first(string $fileName, $raaIndex = 0)
+    function first($fileName, $raaIndex = 0)
     {
         $this->write("FIRST $fileName $raaIndex\n");
         return $this->readAndParse();
     }
 
     /**
-     * @param string $fileName
+     * @param $fileName
      * @return string
      */
-    function last(string $fileName)
+    function last($fileName)
     {
         $this->write("LAST $fileName\n");
         return $this->readAndParse();
