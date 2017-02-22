@@ -101,7 +101,7 @@ class RrdCachedClient
         $this->write('QUIT' . PHP_EOL);
     }
 
-    function update($fileName, $options)
+    function update($fileName, $options, $autoCreate = true)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -113,21 +113,31 @@ class RrdCachedClient
             $this->write('UPDATE ' . $fileName . ' ' . implode(':', $options) . PHP_EOL);
 
             if ($this->autoParse) {
-                return $this->readAndParse();
+                $result = $this->readAndParse();
+                if (-1 === $this->parseLn($result)) {
+                    $result = $this->updateErrorHandler($fileName, $options);
+                }
+                return $result;
             }
         }
     }
 
+
     /**
      * @param $fileName
      * @param $options
+     * @return string
      */
     protected function updateErrorHandler($fileName, $options)
     {
         $this->autoParse = false;
 
         $this->create($fileName, $this->defaultCreateParams);
-        $this->update($fileName, $options);
+        $result = $this->update($fileName, $options);
+
+        $this->autoParse = true;
+
+        return $result;
     }
 
     function create($fileName, $options)
