@@ -28,10 +28,15 @@ class RrdCachedClient
     /** @var int */
     public $defaultCreateStep = 300;
 
+    /**
+     * RrdCachedClient constructor.
+     * @param string $socketPath
+     */
     function __construct($socketPath = 'unix:///var/run/rrdcached.sock')
     {
         $this->socketPath = $socketPath;
     }
+
 
     function connect()
     {
@@ -50,6 +55,10 @@ class RrdCachedClient
         $this->socket->write($command);
     }
 
+    /**
+     * @param string $line
+     * @return int
+     */
     protected function parseLn(string $line): int
     {
         $parts = explode(' ', $line);
@@ -71,6 +80,10 @@ class RrdCachedClient
         return '' !== $result ? $result : $serverMessage;
     }
 
+    /**
+     * @param $command
+     * @return string
+     */
     function help($command): string
     {
         $this->write('HELP ' . $command . PHP_EOL);
@@ -105,6 +118,10 @@ class RrdCachedClient
         }
     }
 
+    /**
+     * @param string $fileName
+     * @param array $options
+     */
     protected function updateErrorHandler(string $fileName, array $options)
     {
         $this->autoParse = false;
@@ -205,7 +222,11 @@ class RrdCachedClient
         $this->autoParse = true;
     }
 
-    function flush(string $fileName)
+    /**
+     * @param string $fileName
+     * @return string
+     */
+    function flush(string $fileName): string
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -221,7 +242,11 @@ class RrdCachedClient
         }
     }
 
-    function wrote(string $fileName)
+    /**
+     * @param string $fileName
+     * @return string
+     */
+    function wrote(string $fileName): string
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -237,19 +262,30 @@ class RrdCachedClient
         }
     }
 
-    function flushAll()
+    /**
+     * @return string
+     */
+    function flushAll(): string
     {
         $this->write("FLUSHALL\n");
         return $this->readAndParse();
     }
 
-    function pending(string $fileName)
+    /**
+     * @param string $fileName
+     * @return string
+     */
+    function pending(string $fileName): string
     {
         $this->write("PENDING $fileName\n");
         return $this->readAndParse();
     }
 
-    function forget(string $fileName)
+    /**
+     * @param string $fileName
+     * @return string
+     */
+    function forget(string $fileName): string
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -265,37 +301,63 @@ class RrdCachedClient
         }
     }
 
-    function queue()
+    /**
+     * @return string
+     */
+    function queue(): string
     {
         $this->write("QUEUE\n");
         return $this->readAndParse();
     }
 
-    function fetch(string $fileName, array $options)
+    /**
+     * @param string $fileName
+     * @param array $options
+     * @return string
+     */
+    function fetch(string $fileName, array $options): string
     {
         $this->write("FETCH $fileName " . implode(' ', $options) . "\n");
         return $this->readAndParse();
     }
 
-    function fetchBin(string $fileName, array $options)
+    /**
+     * @param string $fileName
+     * @param array $options
+     * @return string
+     */
+    function fetchBin(string $fileName, array $options): string
     {
         $this->write("FETCHBIN $fileName " . implode(' ', $options) . "\n");
         return $this->readAndParse();
     }
 
-    function info(string $fileName)
+    /**
+     * @param string $fileName
+     * @return string
+     */
+    function info(string $fileName): string
     {
         $this->write("INFO $fileName\n");
         return $this->readAndParse();
     }
 
-    function first(string $fileName, int $raaIndex = 0)
+    /**
+     * @param string $fileName
+     * @param int $raaIndex
+     * @return string
+     */
+    function first(string $fileName, int $raaIndex = 0): string
     {
         $this->write("FIRST $fileName $raaIndex\n");
         return $this->readAndParse();
     }
 
-    function last(string $fileName)
+    /**
+     * @param string $fileName
+     * @return string
+     */
+    function last(string $fileName): string
     {
         $this->write("LAST $fileName\n");
         return $this->readAndParse();
