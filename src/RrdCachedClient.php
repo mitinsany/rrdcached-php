@@ -347,7 +347,7 @@ class RrdCachedClient
      * @param int $raaIndex
      * @return string
      */
-    function first(string $fileName, int $raaIndex = 0)
+    function first(string $fileName, $raaIndex = 0)
     {
         $this->write("FIRST $fileName $raaIndex\n");
         return $this->readAndParse();
