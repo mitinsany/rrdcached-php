@@ -59,13 +59,13 @@ class RrdCachedClient
      * @param string $line
      * @return int
      */
-    protected function parseLn(string $line): int
+    protected function parseLn(string $line)
     {
         $parts = explode(' ', $line);
         return (int)$parts[0];
     }
 
-    protected function readAndParse(): string
+    protected function readAndParse()
     {
         $readBuffLen = 2048;
         $serverMessage = $this->socket->read($readBuffLen, PHP_NORMAL_READ);
@@ -84,7 +84,7 @@ class RrdCachedClient
      * @param $command
      * @return string
      */
-    function help($command): string
+    function help(string $command)
     {
         $this->write('HELP ' . $command . PHP_EOL);
         return $this->readAndParse();
@@ -101,7 +101,7 @@ class RrdCachedClient
         $this->write('QUIT' . PHP_EOL);
     }
 
-    function update($fileName, array $options)
+    function update(string $fileName, array $options)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -226,7 +226,7 @@ class RrdCachedClient
      * @param string $fileName
      * @return string
      */
-    function flush(string $fileName): string
+    function flush(string $fileName)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -246,7 +246,7 @@ class RrdCachedClient
      * @param string $fileName
      * @return string
      */
-    function wrote(string $fileName): string
+    function wrote(string $fileName)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -265,7 +265,7 @@ class RrdCachedClient
     /**
      * @return string
      */
-    function flushAll(): string
+    function flushAll()
     {
         $this->write("FLUSHALL\n");
         return $this->readAndParse();
@@ -275,7 +275,7 @@ class RrdCachedClient
      * @param string $fileName
      * @return string
      */
-    function pending(string $fileName): string
+    function pending(string $fileName)
     {
         $this->write("PENDING $fileName\n");
         return $this->readAndParse();
@@ -285,7 +285,7 @@ class RrdCachedClient
      * @param string $fileName
      * @return string
      */
-    function forget(string $fileName): string
+    function forget(string $fileName)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
@@ -304,7 +304,7 @@ class RrdCachedClient
     /**
      * @return string
      */
-    function queue(): string
+    function queue()
     {
         $this->write("QUEUE\n");
         return $this->readAndParse();
@@ -315,7 +315,7 @@ class RrdCachedClient
      * @param array $options
      * @return string
      */
-    function fetch(string $fileName, array $options): string
+    function fetch(string $fileName, array $options)
     {
         $this->write("FETCH $fileName " . implode(' ', $options) . "\n");
         return $this->readAndParse();
@@ -326,7 +326,7 @@ class RrdCachedClient
      * @param array $options
      * @return string
      */
-    function fetchBin(string $fileName, array $options): string
+    function fetchBin(string $fileName, array $options)
     {
         $this->write("FETCHBIN $fileName " . implode(' ', $options) . "\n");
         return $this->readAndParse();
@@ -336,7 +336,7 @@ class RrdCachedClient
      * @param string $fileName
      * @return string
      */
-    function info(string $fileName): string
+    function info(string $fileName)
     {
         $this->write("INFO $fileName\n");
         return $this->readAndParse();
@@ -347,7 +347,7 @@ class RrdCachedClient
      * @param int $raaIndex
      * @return string
      */
-    function first(string $fileName, int $raaIndex = 0): string
+    function first(string $fileName, int $raaIndex = 0)
     {
         $this->write("FIRST $fileName $raaIndex\n");
         return $this->readAndParse();
@@ -357,7 +357,7 @@ class RrdCachedClient
      * @param string $fileName
      * @return string
      */
-    function last(string $fileName): string
+    function last(string $fileName)
     {
         $this->write("LAST $fileName\n");
         return $this->readAndParse();
