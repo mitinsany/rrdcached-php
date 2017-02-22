@@ -2,6 +2,7 @@
     "name": "mitinsany/rrdcached-php",
     "description": "PHP wrapper for RRDCache daemon",
     "homepage": "https://github.com/MitinSany/rrdcached-php",
+    "license": "GPL-3.0",
     "require": {
         "clue/socket-raw": "^1.2"
     },
