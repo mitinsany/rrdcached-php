@@ -28,6 +28,9 @@ class RrdCachedClient
     /** @var int */
     public $defaultCreateStep = 300;
 
+    /** @var bool */
+    public $connected = false;
+
     /**
      * RrdCachedClient constructor.
      * @param $socketPath
@@ -42,12 +45,14 @@ class RrdCachedClient
     {
         $factory = new Factory();
         $this->socket = $factory->createClient($this->socketPath);
+        return $this->connected = true;
 
     }
 
     function disconnect()
     {
         $this->socket->close();
+        return !$this->connected = false;
     }
 
     function write($command)
