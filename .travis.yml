@@ -11,9 +11,12 @@ addons:
     packages:
     - rrdcached
 
+env:
+  matrix:
+    - RRD_MODE=SOCK
+    - RRD_MODE=TCP
+
 before_install: true
-#  - sudo apt-get update -q
-#  - sudo apt-get install rrdcached -y
 
 install: true
 
