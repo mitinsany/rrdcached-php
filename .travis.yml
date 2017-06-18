@@ -22,7 +22,8 @@ install: true
 
 before_script:
   - composer update
+  - make config-rrd
 
 script:
-  - phpunit
+  - make tests
 
