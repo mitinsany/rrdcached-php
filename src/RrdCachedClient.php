@@ -2,9 +2,9 @@
 
 namespace RrdCached;
 
-use Socket\Raw\Socket;
+use Exception as Exception;
 use Socket\Raw\Factory;
-use \Exception as Exception;
+use Socket\Raw\Socket;
 
 class RrdCachedClient
 {
@@ -40,18 +40,20 @@ class RrdCachedClient
 
     /**
      * RrdCachedClient constructor.
+     *
      * @param $socketPath
      */
-    function __construct($socketPath = 'unix:///var/run/rrdcached.sock')
+    public function __construct($socketPath = 'unix:///var/run/rrdcached.sock')
     {
         $this->socketPath = $socketPath;
     }
 
     /**
-     * @return bool
      * @throws RrdCachedException
+     *
+     * @return bool
      */
-    function connect()
+    public function connect()
     {
         $factory = new Factory();
 
@@ -62,14 +64,16 @@ class RrdCachedClient
         }
 
         $this->connected = true;
+
         return true;
     }
 
     /**
-     * @return bool
      * @throws RrdCachedException
+     *
+     * @return bool
      */
-    function disconnect()
+    public function disconnect()
     {
         try {
             $this->socket->close();
@@ -79,15 +83,18 @@ class RrdCachedClient
         }
 
         $this->connected = false;
+
         return true;
     }
 
     /**
      * @param $command
-     * @return int number of bytes actually written
+     *
      * @throws RrdCachedException
+     *
+     * @return int number of bytes actually written
      */
-    function write($command)
+    public function write($command)
     {
         try {
             $written = $this->socket->write($command);
@@ -100,12 +107,13 @@ class RrdCachedClient
 
     /**
      * @param $line
+     *
      * @return int
      */
     public function parseServerLn($line)
     {
         $space = strpos($line, ' ');
-        $this->lastCode = (int)substr($line, 0, $space);
+        $this->lastCode = (int) substr($line, 0, $space);
         $this->lastMessage = trim(substr($line, $space + 1));
 
         return $this->lastCode;
@@ -113,8 +121,10 @@ class RrdCachedClient
 
     /**
      * @param string $param
-     * @return bool
+     *
      * @throws RrdCachedException
+     *
+     * @return bool
      */
     protected function checkLastCode($param = '')
     {
@@ -122,9 +132,10 @@ class RrdCachedClient
             return true;
         } else {
             if ('' !== $param) {
-                $addMsg = ': ' . $param;
+                $addMsg = ': '.$param;
             }
-            throw new RrdCachedException($this->getLastMessage() . $addMsg, $this->getLastCode());
+
+            throw new RrdCachedException($this->getLastMessage().$addMsg, $this->getLastCode());
         }
     }
 
@@ -148,16 +159,18 @@ class RrdCachedClient
 
     /**
      * @param $command
-     * @return string
+     *
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function help($command)
+    public function help($command)
     {
         if ($this->batchMode) {
             throw new RrdCachedException('Method FETCH not allowed in batch mode');
         }
 
-        $this->write('HELP ' . $command . PHP_EOL);
+        $this->write('HELP '.$command.PHP_EOL);
         $result = $this->readAndParse();
         if ($this->checkLastCode()) {
             return $result;
@@ -165,16 +178,17 @@ class RrdCachedClient
     }
 
     /**
-     * @return string
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function stats()
+    public function stats()
     {
         if ($this->batchMode) {
             throw new RrdCachedException('Method FETCH not allowed in batch mode');
         }
 
-        $this->write('STATS' . PHP_EOL);
+        $this->write('STATS'.PHP_EOL);
 
         $result = $this->readAndParse();
         if ($this->checkLastCode()) {
@@ -185,10 +199,11 @@ class RrdCachedClient
     /**
      * @return bool
      */
-    function quit()
+    public function quit()
     {
-        $this->write('QUIT' . PHP_EOL);
+        $this->write('QUIT'.PHP_EOL);
         $this->disconnect();
+
         return true;
     }
 
@@ -196,19 +211,21 @@ class RrdCachedClient
      * @param $fileName
      * @param $options
      * @param bool $autoCreate
-     * @return bool|string
+     *
      * @throws RrdCachedException
+     *
+     * @return bool|string
      */
-    function update($fileName, $options, $autoCreate = true)
+    public function update($fileName, $options, $autoCreate = true)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
-                'command' => 'update',
+                'command'  => 'update',
                 'fileName' => $fileName,
-                'options' => $options
+                'options'  => $options,
             ];
         } else {
-            $this->write('UPDATE ' . $fileName . ' ' . implode(':', $options) . PHP_EOL);
+            $this->write('UPDATE '.$fileName.' '.implode(':', $options).PHP_EOL);
 
             if ($this->autoParse) {
                 $this->readAndParse();
@@ -221,13 +238,14 @@ class RrdCachedClient
                 }
             }
         }
+
         return true;
     }
-
 
     /**
      * @param $fileName
      * @param $options
+     *
      * @return string
      */
     protected function updateErrorHandler($fileName, $options)
@@ -245,10 +263,12 @@ class RrdCachedClient
     /**
      * @param $fileName
      * @param $options
-     * @return string
+     *
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function create($fileName, $options)
+    public function create($fileName, $options)
     {
         if (0 < count($options)) {
             $workOptions = $options;
@@ -259,15 +279,14 @@ class RrdCachedClient
             defaultCreateParams or send as parameter in create function');
         }
 
-
         if ($this->batchMode) {
             $this->batchCommands[] = [
-                'command' => 'create',
+                'command'  => 'create',
                 'fileName' => $fileName,
-                'options' => $workOptions
+                'options'  => $workOptions,
             ];
         } else {
-            $this->write('CREATE ' . $fileName . ' ' . implode(' ', $workOptions) . PHP_EOL);
+            $this->write('CREATE '.$fileName.' '.implode(' ', $workOptions).PHP_EOL);
 
             if ($this->autoParse) {
                 return $this->readAndParse();
@@ -278,9 +297,9 @@ class RrdCachedClient
     /**
      * @return bool
      */
-    function batchBegin()
+    public function batchBegin()
     {
-        $this->write('BATCH' . PHP_EOL);
+        $this->write('BATCH'.PHP_EOL);
         $this->batchMode = true;
         $this->readAndParse();
 
@@ -288,35 +307,35 @@ class RrdCachedClient
     }
 
     /**
-     * @return bool
      * @throws RrdCachedException
+     *
+     * @return bool
      */
-    function batchCommit()
+    public function batchCommit()
     {
         $this->batchMode = false;
         $this->autoParse = false;
 
         foreach ($this->batchCommands as $k => $item) {
-
             switch ($item['command']) {
 
                 case 'create':
                     $this->create($item['fileName'], $item['options']);
                     break;
 
-                case 'update';
+                case 'update':
                     $this->update($item['fileName'], $item['options']);
                     break;
 
-                case 'flush';
+                case 'flush':
                     $this->flush($item['fileName']);
                     break;
 
-                case 'forget';
+                case 'forget':
                     $this->forget($item['fileName']);
                     break;
 
-                case 'wrote';
+                case 'wrote':
                     $this->wrote($item['fileName']);
                     break;
             }
@@ -331,12 +350,11 @@ class RrdCachedClient
         }
 
         foreach ($batchResult as $k => $v) {
-
             $returnCommandNum = $this->parseServerLn($v) - 1;
             $batchItem = $this->batchCommands[$returnCommandNum];
 
             switch ($batchItem['command']) {
-                case 'update';
+                case 'update':
                     $this->updateErrorHandler($batchItem['fileName'], $batchItem['options']);
                     break;
 
@@ -344,8 +362,8 @@ class RrdCachedClient
                     if (0 < strpos($v, 'File exists')) {
                         continue;
                     }
-                    throw new RrdCachedException('Error create file ' . $batchItem['fileName']);
 
+                    throw new RrdCachedException('Error create file '.$batchItem['fileName']);
             }
         }
 
@@ -356,14 +374,15 @@ class RrdCachedClient
 
     /**
      * @param $fileName
+     *
      * @return string
      */
-    function flush($fileName)
+    public function flush($fileName)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
-                'command' => 'flush',
-                'fileName' => $fileName
+                'command'  => 'flush',
+                'fileName' => $fileName,
             ];
         } else {
             $this->write("flush $fileName\n");
@@ -379,14 +398,15 @@ class RrdCachedClient
 
     /**
      * @param $fileName
+     *
      * @return string
      */
-    function wrote($fileName)
+    public function wrote($fileName)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
-                'command' => 'wrote',
-                'fileName' => $fileName
+                'command'  => 'wrote',
+                'fileName' => $fileName,
             ];
         } else {
             $this->write("wrote $fileName\n");
@@ -401,16 +421,17 @@ class RrdCachedClient
     }
 
     /**
-     * @return string
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function flushAll()
+    public function flushAll()
     {
         if ($this->batchMode) {
             throw new RrdCachedException('Method FLUSHALL not allowed in batch mode');
         }
 
-        $this->write('FLUSHALL' . PHP_EOL);
+        $this->write('FLUSHALL'.PHP_EOL);
 
         $result = $this->readAndParse();
         if ($this->checkLastCode()) {
@@ -420,16 +441,18 @@ class RrdCachedClient
 
     /**
      * @param $fileName
-     * @return string
+     *
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function pending($fileName)
+    public function pending($fileName)
     {
         if ($this->batchMode) {
             throw new RrdCachedException('Method PENDING not allowed in batch mode');
         }
 
-        $this->write("PENDING $fileName" . PHP_EOL);
+        $this->write("PENDING $fileName".PHP_EOL);
 
         $this->readAndParse();
         if ($this->checkLastCode($fileName)) {
@@ -439,14 +462,15 @@ class RrdCachedClient
 
     /**
      * @param $fileName
+     *
      * @return string
      */
-    function forget($fileName)
+    public function forget($fileName)
     {
         if ($this->batchMode) {
             $this->batchCommands[] = [
-                'command' => 'forget',
-                'fileName' => $fileName
+                'command'  => 'forget',
+                'fileName' => $fileName,
             ];
         } else {
             $this->write("FORGET $fileName\n");
@@ -461,17 +485,17 @@ class RrdCachedClient
     }
 
     /**
-     * @return string
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function queue()
+    public function queue()
     {
-
         if ($this->batchMode) {
             throw new RrdCachedException('Method QUEUE not allowed in batch mode');
         }
 
-        $this->write('QUEUE' . PHP_EOL);
+        $this->write('QUEUE'.PHP_EOL);
 
         $result = $this->readAndParse();
         if ($this->checkLastCode()) {
@@ -482,32 +506,37 @@ class RrdCachedClient
     /**
      * @param $fileName
      * @param $options
-     * @return string
+     *
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function fetch($fileName, $options)
+    public function fetch($fileName, $options)
     {
         if ($this->batchMode) {
             throw new RrdCachedException('Method FETCH not allowed in batch mode');
         }
 
-        $this->write("FETCH $fileName " . implode(' ', $options) . "\n");
+        $this->write("FETCH $fileName ".implode(' ', $options)."\n");
+
         return $this->readAndParse();
     }
 
     /**
      * @param $fileName
      * @param $options
-     * @return string
+     *
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function fetchBin($fileName, $options)
+    public function fetchBin($fileName, $options)
     {
         if ($this->batchMode) {
             throw new RrdCachedException('Method FETCH not allowed in batch mode');
         }
 
-        $this->write("FETCHBIN $fileName " . implode(' ', $options) . "\n");
+        $this->write("FETCHBIN $fileName ".implode(' ', $options)."\n");
 
         $result = $this->readAndParse();
         if ($this->checkLastCode($fileName)) {
@@ -517,10 +546,12 @@ class RrdCachedClient
 
     /**
      * @param $fileName
-     * @return string
+     *
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function info($fileName)
+    public function info($fileName)
     {
         if ($this->batchMode) {
             throw new RrdCachedException('Method INFO not allowed in batch mode');
@@ -537,10 +568,12 @@ class RrdCachedClient
     /**
      * @param $fileName
      * @param int $raaIndex
-     * @return string
+     *
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function first($fileName, $raaIndex = 0)
+    public function first($fileName, $raaIndex = 0)
     {
         if ($this->batchMode) {
             throw new RrdCachedException('Method FIRST not allowed in batch mode');
@@ -556,10 +589,12 @@ class RrdCachedClient
 
     /**
      * @param $fileName
-     * @return string
+     *
      * @throws RrdCachedException
+     *
+     * @return string
      */
-    function last($fileName)
+    public function last($fileName)
     {
         if ($this->batchMode) {
             throw new RrdCachedException('Method LAST not allowed in batch mode');
@@ -576,7 +611,7 @@ class RrdCachedClient
     /**
      * @return bool
      */
-    function isConnected()
+    public function isConnected()
     {
         return $this->connected;
     }
@@ -584,7 +619,7 @@ class RrdCachedClient
     /**
      * @return bool|string
      */
-    function getLastMessage()
+    public function getLastMessage()
     {
         if (null !== trim($this->lastMessage)) {
             return $this->lastMessage;
@@ -596,7 +631,7 @@ class RrdCachedClient
     /**
      * @return bool|int
      */
-    function getLastCode()
+    public function getLastCode()
     {
         if (null !== $this->lastCode) {
             return $this->lastCode;
@@ -608,7 +643,7 @@ class RrdCachedClient
     /**
      * @return bool|Socket
      */
-    function getSocket()
+    public function getSocket()
     {
         if ($this->socket instanceof Socket) {
             return $this->socket;
