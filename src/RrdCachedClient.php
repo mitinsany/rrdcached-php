@@ -360,7 +360,7 @@ class RrdCachedClient
 
                 case 'create':
                     if (0 < strpos($v, 'File exists')) {
-                        continue;
+                        continue 2;
                     }
 
                     throw new RrdCachedException('Error create file '.$batchItem['fileName']);
